@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real-Time Weather Dashboard</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#2193b0,#6dd5ed);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.container{
+    width:400px;
+    background:#fff;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.25);
+    text-align:center;
+}
+
+h1{
+    color:#333;
+    margin-bottom:20px;
+}
+
+.search-box{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.search-box input{
+    flex:1;
+    padding:12px;
+    border:2px solid #ddd;
+    border-radius:8px;
+    font-size:16px;
+}
+
+.search-box button{
+    padding:12px 18px;
+    background:#007BFF;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.search-box button:hover{
+    background:#0056b3;
+}
+
+.weather{
+    display:none;
+    margin-top:20px;
+}
+
+.weather h2{
+    color:#007BFF;
+    margin-bottom:15px;
+}
+
+.info{
+    background:#f4f4f4;
+    padding:12px;
+    margin:10px 0;
+    border-radius:8px;
+    text-align:left;
+}
+
+.info strong{
+    color:#444;
+}
+
+#error{
+    color:red;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+.loading{
+    display:none;
+    color:#007BFF;
+    margin-top:15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🌤 Weather Dashboard</h1>
+
+<div class="search-box">
+<input type="text" id="city" placeholder="Enter City Name">
+<button onclick="getWeather()">Search</button>
+</div>
+
+<div class="loading" id="loading">
+Loading weather...
+</div>
+
+<div id="weather" class="weather">
+
+<h2 id="cityName"></h2>
+
+<div class="info">
+<strong>🌡 Temperature:</strong>
+<span id="temp"></span>
+</div>
+
+<div class="info">
+<strong>💧 Humidity:</strong>
+<span id="humidity"></span>
+</div>
+
+<div class="info">
+<strong>💨 Wind Speed:</strong>
+<span id="wind"></span>
+</div>
+
+<div class="info">
+<strong>☁ Weather:</strong>
+<span id="description"></span>
+</div>
+
+<div class="info">
+<strong>🌍 Coordinates:</strong>
+<span id="coord"></span>
+</div>
+
+<div class="info">
+<strong>🌅 Sunrise:</strong>
+<span id="sunrise"></span>
+</div>
+
+<div class="info">
+<strong>🌇 Sunset:</strong>
+<span id="sunset"></span>
+</div>
+
+</div>
+
+<p id="error"></p>
+
+</div>
+
+<script>
+
+const API_KEY = "YOUR_API_KEY";
+
+async function getWeather(){
+
+    const city=document.getElementById("city").value.trim();
+
+    const error=document.getElementById("error");
+    const weather=document.getElementById("weather");
+    const loading=document.getElementById("loading");
+
+    error.innerHTML="";
+    weather.style.display="none";
+
+    if(city===""){
+        error.innerHTML="Please enter a city name.";
+        return;
+    }
+
+    loading.style.display="block";
+
+    const url=`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`;
+
+    try{
+
+        const response=await fetch(url);
+
+        if(!response.ok){
+            throw new Error("City not found.");
+        }
+
+        const data=await response.json();
+
+        document.getElementById("cityName").innerHTML=
+        `${data.name}, ${data.sys.country}`;
+
+        document.getElementById("temp").innerHTML=
+        `${data.main.temp} °C`;
+
+        document.getElementById("humidity").innerHTML=
+        `${data.main.humidity}%`;
+
+        document.getElementById("wind").innerHTML=
+        `${data.wind.speed} m/s`;
+
+        document.getElementById("description").innerHTML=
+        data.weather[0].description;
+
+        document.getElementById("coord").innerHTML=
+        `${data.coord.lat}, ${data.coord.lon}`;
+
+        const sunrise=new Date(data.sys.sunrise*1000);
+        const sunset=new Date(data.sys.sunset*1000);
+
+        document.getElementById("sunrise").innerHTML=
+        sunrise.toLocaleTimeString();
+
+        document.getElementById("sunset").innerHTML=
+        sunset.toLocaleTimeString();
+
+        weather.style.display="block";
+
+    }
+
+    catch(err){
+
+        error.innerHTML=err.message;
+
+    }
+
+    finally{
+
+        loading.style.display="none";
+
+    }
+
+}
+
+document.getElementById("city").addEventListener("keypress",function(e){
+
+    if(e.key==="Enter"){
+        getWeather();
+    }
+
+});
+
+</script>
+
+</body>
+</html>
